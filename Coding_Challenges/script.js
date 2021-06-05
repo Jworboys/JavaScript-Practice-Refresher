@@ -220,7 +220,6 @@ document.body.append(document.createElement('button'));
 document.querySelector('button').addEventListener('click', function(){
     const text = document.querySelector('textarea').value;
     const rows = text.split('\n');
-    console.log(rows);
     
     for(const [i, row] of rows.entries()){
         const [first, second] = row.toLowerCase().trim().split('_');
