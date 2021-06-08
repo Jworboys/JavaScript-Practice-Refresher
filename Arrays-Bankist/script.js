@@ -82,9 +82,10 @@ const displayMovements = function(movements){
 
 
 // Used to display the balance
-const calcDisplayBalance = function(movements){
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance}€`;
+const calcDisplayBalance = function(acc){
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${acc.balance}€`;
+  
 }
 
 
@@ -118,7 +119,16 @@ const createUsernames = function(accs){
 };
 createUsernames(accounts);
 
+const updateUI = function(acc) {
+    // Display movements 
+    displayMovements(currentAccount.movements);
 
+    // Display Balance
+    calcDisplayBalance(currentAccount);
+
+    // Display Summary
+    calcDisplaySummary(currentAccount);
+}
 
 
 // Event Handlers
@@ -127,8 +137,6 @@ btnLogin.addEventListener('click', function(e){
   //prevent form from submitting
   e.preventDefault();
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
-
-  console.log(currentAccount);
 
   if(currentAccount?.pin === Number(inputLoginPin.value)){
     // Display UI and welcome Message
@@ -139,13 +147,21 @@ btnLogin.addEventListener('click', function(e){
     inputLoginPin.value = inputLoginUsername.value = '';
     inputLoginPin.blur();
 
-    // Display movements 
-    displayMovements(currentAccount.movements);
+    updateUI(currentAccount);
+  }
+});
 
-    // Display Balance
-    calcDisplayBalance(currentAccount.movements);
 
-    // Display Summary
-    calcDisplaySummary(currentAccount);
+btnTransfer.addEventListener('click', function(e){
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const recieverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if(amount > 0 && recieverAcc && currentAccount.balance >= amount && recieverAcc.username !== currentAccount.username){
+    currentAccount.movements.push(-amount);
+    recieverAcc.movements.push(amount);
+    updateUI(currentAccount);
   }
 })
