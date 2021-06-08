@@ -62,6 +62,7 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
+// Used to display the deposits and withdrawls with arrays.
 const displayMovements = function(movements){
   containerMovements.innerHTML = '';
   movements.forEach(function(mov, i){
@@ -77,7 +78,36 @@ const displayMovements = function(movements){
   });
 };
 
-displayMovements(account1.movements);
+
+
+
+// Used to display the balance
+const calcDisplayBalance = function(acc){
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${acc.balance}€`;
+  
+}
+
+
+
+
+
+const calcDisplaySummary = function(acc){
+  const incomes = acc.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
+  labelSumIn.textContent = `${incomes}€`;
+
+  const out = acc.movements.filter(mov => mov < 0).reduce((acc, mov) => acc + mov, 0);
+  labelSumOut.textContent = `${out}€`;
+
+  const intrest = acc.movements.filter(mov => mov > 0).map(deposit => (deposit * acc.interestRate)/100).filter((int, i, arr) =>{
+    return int >= 1;
+  }).reduce((acc, int) => acc + int, 0);
+  labelSumInterest.textContent = `${intrest}€`;
+}
+
+
+
+
 
 
 const createUsernames = function(accs){
@@ -87,6 +117,51 @@ const createUsernames = function(accs){
     }).join('');
   })
 };
-
 createUsernames(accounts);
-console.log(accounts)
+
+const updateUI = function(acc) {
+    // Display movements 
+    displayMovements(currentAccount.movements);
+
+    // Display Balance
+    calcDisplayBalance(currentAccount);
+
+    // Display Summary
+    calcDisplaySummary(currentAccount);
+}
+
+
+// Event Handlers
+let currentAccount;
+btnLogin.addEventListener('click', function(e){
+  //prevent form from submitting
+  e.preventDefault();
+  currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
+
+  if(currentAccount?.pin === Number(inputLoginPin.value)){
+    // Display UI and welcome Message
+    labelWelcome.textContent = `Welcome back ${currentAccount.owner.split(' ')[0]}`;
+    containerApp.style.opacity = 100;
+
+    // Clear the input fields 
+    inputLoginPin.value = inputLoginUsername.value = '';
+    inputLoginPin.blur();
+
+    updateUI(currentAccount);
+  }
+});
+
+
+btnTransfer.addEventListener('click', function(e){
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const recieverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if(amount > 0 && recieverAcc && currentAccount.balance >= amount && recieverAcc.username !== currentAccount.username){
+    currentAccount.movements.push(-amount);
+    recieverAcc.movements.push(amount);
+    updateUI(currentAccount);
+  }
+})
