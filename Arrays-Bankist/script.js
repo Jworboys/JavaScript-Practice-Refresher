@@ -63,9 +63,12 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 
 // Used to display the deposits and withdrawls with arrays.
-const displayMovements = function(movements){
+const displayMovements = function(movements, sort = false){
   containerMovements.innerHTML = '';
-  movements.forEach(function(mov, i){
+
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach(function(mov, i){
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -90,8 +93,6 @@ const calcDisplayBalance = function(acc){
 
 
 
-
-
 const calcDisplaySummary = function(acc){
   const incomes = acc.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes}€`;
@@ -107,9 +108,6 @@ const calcDisplaySummary = function(acc){
 
 
 
-
-
-
 const createUsernames = function(accs){
   accs.forEach(function(acc){
     acc.username = acc.owner.toLowerCase().split(' ').map(function(name){
@@ -118,6 +116,8 @@ const createUsernames = function(accs){
   })
 };
 createUsernames(accounts);
+
+
 
 const updateUI = function(acc) {
     // Display movements 
@@ -129,6 +129,9 @@ const updateUI = function(acc) {
     // Display Summary
     calcDisplaySummary(currentAccount);
 }
+
+
+
 
 
 // Event Handlers
@@ -152,6 +155,8 @@ btnLogin.addEventListener('click', function(e){
 });
 
 
+
+
 btnTransfer.addEventListener('click', function(e){
   e.preventDefault();
   const amount = Number(inputTransferAmount.value);
@@ -166,6 +171,9 @@ btnTransfer.addEventListener('click', function(e){
   }
 })
 
+
+
+
 btnLoan.addEventListener('click', function(e){
   e.preventDefault();
 
@@ -177,6 +185,8 @@ btnLoan.addEventListener('click', function(e){
     inputLoanAmount.value = '';
   }
 })
+
+
 
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
@@ -191,3 +201,11 @@ btnClose.addEventListener('click', function (e) {
 
   inputCloseUsername.value = inputClosePin.value = '';
 })
+
+
+let sorted = false;
+btnSort.addEventListener('click', function(e){
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
+});
