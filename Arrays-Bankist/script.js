@@ -73,20 +73,29 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
+const formatMovementDate = function(date, locale){
+  const calcDaysPassed = (date1, date2) => Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+  const daysPassed = calcDaysPassed(new Date(), date)
+  
+  if(daysPassed === 0) return 'Today';
+  if(daysPassed === 1) return 'Yesterday';
+  if(daysPassed <= 7) return `${daysPassed} days ago`;
+  return new Intl.DateTimeFormat(locale).format(date);
+}
+
+
+
 // Used to display the deposits and withdrawls with arrays.
 const displayMovements = function(acc, sort = false){
   containerMovements.innerHTML = '';
-
+  
   const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
-
+  
   movs.forEach(function(mov, i){
     const type = mov > 0 ? 'deposit' : 'withdrawal';
-
+    
     const date = new Date(acc.movementsDates[i]);
-    const day = `${date.getDate()}`.padStart(2,0);
-    const month = `${date.getMonth() + 1}`.padStart(2,0);
-    const year = date.getFullYear();
-    const displayDate = `${day}/${month}/${year}`;
+    const displayDate = formatMovementDate(date, acc.locale);
     
     const html = `
     <div class="movements__row">
@@ -152,19 +161,6 @@ const updateUI = function(acc) {
 
 // Event Handlers
 let currentAccount;
-
-
-// Faking the loggin
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
-/////////////////////////////
-
-
-
-
-
-
 btnLogin.addEventListener('click', function(e){
   //prevent form from submitting
   e.preventDefault();
@@ -177,12 +173,19 @@ btnLogin.addEventListener('click', function(e){
 
     // Creating current date and time
     const now = new Date();
-    const day = `${now.getDate()}`.padStart(2,0);
-    const month = `${now.getMonth() + 1}`.padStart(2,0);
-    const year = now.getFullYear();
-    const hour = now.getHours();
-    const min = `${now.getMinutes()}`.padStart(2,0);
-    labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      //weekday: 'long',
+    };
+
+    const locale = navigator.language;
+    console.log(locale);
+  
+    labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(now);
 
 
     // Clear the input fields 
